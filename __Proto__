@@ -1,0 +1,283 @@
+/*
+・・・プロトタイプチェーン
+オブジェクトは内部的にPrototypeプロパティを持っている。値はnullかオブジェクト()
+プロトタイプチェーンはgetするときのみに機能し、setはベースにセットするのみ(プロパティより先にsetterがある場合はsetterが優先される。)
+プロトタイプはgetterが返したもの。setterしたものもプロトタイプになる。
+プロトタイプに新たにオブジェクトを作成するとデフォルトのオブジェクトにはデフォルトではnullになる。
+関数(アロー関数はのぞく）はすべてプロトタイプをプロパティを持つ
+  オブジェクトのプロトタイプの確認
+  console.log(Object.getPrototypeOf(obj));
+  オブジェクトのプロトタイプに追加
+  console.log(Object.setPrototypeOf(obj, {c:3,}));
+  プロトタイプとオブジェクトを同時に設定()・・・処理が早いので基本的にはこちらを使う。
+  const obj = Object.create();第一引数(このオブジェクトのプロトタイプにしたいオブジェクト)
+  const obj = Object.create({ c: 3 });(このオブジェクトのプロトタイプにしたいオブジェクト)
+  obj.a = 1;  (このオブジェクトのプロパティ)
+  obj.b = 2;  (このオブジェクトのプロパティ)
+Object.defineProperty(オブジェクト, 定義するプロパティ名, 記述子(value:1000,writableなどの設定))・・・
+prototype と __proto__ の違い
+prototype・・・Functionオブジェクトだけが持つプロパティ。参照先はオブジェクト
+__proto__・・・すべてのオブジェクトが持つ内部的プロパティ。プロトタイプチェーン。
+
+クラス・・・先頭大文字の〇〇Constructorにする（アロー関数ではエラーになる）
+ファクトリー関数
+thisに直接代入はできない
+const UserFactory = (name, age) => {
+  const user = Object.create(userPrototype);
+  user.name = name;
+  user.age = age;
+  return user;
+ };
+ //コンストラクタ関数
+const UserConstructor = function (name, age) {
+  //this = {} //newで呼び出されると暗黙的に行われている
+  //this = Object.create(UserConstructor.prototype) //内部的にはthisはコンストラクタのプロトタイプになる。
+  this.name = name;
+  this.age = age;
+  this.greeting = function () {
+    return `Hi This is ${this.name}. I am ${this.age} years`
+  };
+  // return this; // newで呼び出されると暗黙的に行われている
+};
+UserConstructor.prototype.greeting = function() {　　　　//上記の以外でも別途記載も可能
+  return `Hi This is ${this.name}. I am ${this.age} years`;
+};
+(アロー関数だとエラーが発生する。)
+new.targetで自分自身のコンストラ関数を示す(アロー関数ではエラーになる)
+コンストラクタ関数内でオブジェクトをreturnするとすべてオブジェクトで上書きされる。(オブジェクト以外はすべて無視される。)
+コンストラクタ関数を使用して生成されたものをインスタンスと呼ぶ。
+const User1 = new UserConstructor('Hiromu',30);
+呼び出す時にnewとすることで、
+クラス関数内に暗黙的にthis = Object.create(関数名.prototype)が作成され、
+暗黙的にreturn thisとなる。
+
+すべての関数にはprototypeプロパティを持っている(アロー関数は除く)
+
+
+console.log(o.hasOwnProperty('b')); //オブジェクト内のみに存在するか確認。 オブジェクト.メソッドはthisを使っている。
+console.log(Object.prototype.hasOwnProperty.call(o,'a'));  //このままだとオブジェクトを指定できていないのでcallの第一引数でオブジェクトを指定する。
+console.log('hello' in o);  //チェーンプロトタイプまで確認
+
+クラスの定義・・・コンストラクタ関数の上位互換。メソッドのみを記載。UserConstructor.prototype.greetingのようにprotptypeに定義していく。
+class User {
+  id = 120; //Publicフィールド。クラスに作成される。。上から順番に呼ばれるがconstructor関数より先に実行される。
+  #age = 30;//Privateフィールド。クラスからでし読み取り・書き込みができない。書き込む場合はthis.#ageとする。必ずフィールドで定義する。
+  constructor(name, age) { //new された時にコストラクタ関数のように処理を、真っ先に実行される。
+    this.name = name;
+    this.#age = age;
+
+  }
+  greeting() {}
+  post() { }
+}
+*/
+
+// const obj = {
+//   a: 1,
+//   b: 2,
+// };
+
+// // const p = {
+// //   c: 3,
+// // };
+// // const obj = Object.create({ c: 3 });
+// // obj.a = 1;
+// // obj.b = 2;
+
+// Object.setPrototypeOf(obj, {
+//   c:3,
+// })
+// console.log(obj)
+// const obj = Object.create({ c: 3 })
+//   {
+//   d: {
+//     value: 4,
+//     enumerable: true,
+//   },
+//   e:{},
+// });
+// obj.a = 1;
+// obj.b = 2;
+
+
+// for (const key in Object.keys(obj)) {
+//   console.log(key)
+// }
+
+// console.log(obj);
+// console.log(Object.getOwnPropertyNames(obj));
+
+'user strict'
+const userPrototype = {
+  greeting() {
+    return `Hi This is ${this.name}. I am ${this.age} years`;
+  },
+}
+
+// this = Object.create(UserConstructor.prototype)
+// let UserFactory = (name, age) => {
+//   const user = Object.create(userPrototype);
+//   user.name = name;
+//   user.age = age;
+//   return user;
+// };
+// const user1 = UserFactory('Hiro', 30);
+// const user2 = UserFactory("Shiro", 20);
+
+const UserConstructor = function (name, age) {
+  this.name = name;
+  this.age = age;
+  this.greeting = function () {
+    return `Hi This is ${this.name}. I am ${this.age} years`;
+  }
+};
+// Object.defineProperty(UserConstructor.prototype, '', {
+
+// })
+
+// UserConstructor.prototype.greeting = function() {
+//   return `Hi This is ${this.name}. I am ${this.age} years`;
+// };
+
+  const user1 = new UserConstructor("Hiro", 30);
+  const user2 = new UserConstructor("Shiro", 20);
+
+
+// console.log(user1.greeting());
+// console.log(user2.greeting());
+// // console.dir(UserConstructor);
+
+// let o = new Object();
+// o = {};
+// console.log(o.hasOwnProperty('b'));
+// console.log(Object.prototype.hasOwnProperty('a'));
+// console.log('hello' in o);
+
+
+
+
+// class User {
+//   id = 120;
+//   #age = 0
+//   constructor(name, age) { //new された時にコストラクタ関数のように処理を、真っ先に実行される。
+//     this.name = name;
+//     this.#age = age
+//   }
+//   static birthday = '1992/07/03';
+//   static greeting() {}
+//   post() { }
+// }
+// const user0 = new User('Hiro',30);
+// console.dir(User);
+// console.dir(user0);
+// console.dir(user2);
+
+
+class Animal {
+  age = 0; //②
+  constructor(age) {
+    console.log('hello Animal') //③
+    this.age = age;
+  }
+  eat() {
+    console.log("eat from Animal");
+  }
+  static foo() {
+    console.log('foo');
+  }
+}
+
+//Bird.PrototypeをAnimal.Prototypeにしている。
+// class Bird extends Animal {　//継承元はクラスではなくても、関数式(アロー関数は不可)でも良い。
+//   name = 'bird'  //④
+//   constructor(age, name) {
+//     console.log('Hello');  //super()実行後の順番。①
+//     super(age) //必ず先にSuper()をする。thisはsuperを呼び出した時に作られる。継承元のconstructor内で作られる。
+//     this.name = name  //⑤super()の後
+//   }
+
+//   eat() {
+//     super.eat();
+//     console.log('eat from Bird');//子のメソッドが優先される。
+//   }
+//   fly() {
+//     console.log("fly from Bird");
+//   }
+// }
+
+// const bird = new Bird(3,'pi');
+// console.dir(bird);
+// bird.eat();
+
+const animalObj = {
+  age: 0,
+  eat() {
+    console.log('eat from animal obj');
+    console.log(this.age);
+  },
+  name : 'name',
+}
+
+const birdObj = {
+  // [[HomeObject]]: undefined(birdObj) //デフォルトでプロパティを持っている。。関数オブジェクト内のメソッドがある場合は、undefinedはそのオブジェクト名になる。
+  age: 1,
+  eat() {
+    super.eat();
+    console.log("eat from bird obj");
+    // super.name = "pi"; //this.name = と同じ状態(Setterになる)(this.superでは呼び出せない)
+    // birdObj.__proto__.name == super.name;
+    //birdObj.__proto__ = animalObj;  nameプロパティが定義されたオブジェクトを代入している必要がある。
+    //super.をgetterとして扱うとsuper.はメソッドが所属するオブジェクトのprototypeになる
+    // console.log(super.name);
+    console.log(this.age);
+  },
+};
+
+const swallowObj = {
+  age: 2,
+  eat() {
+    super.eat(); //swallowObj.__protp__.eat.call(this)と同じ //superを使うにはメソッドは省略記述する。
+    console.log("eat from swallowObj obj");
+    console.log(this.age);
+    //this.name = と同じ状態(Setterになる)(this.superでは呼び出せない)
+    //swallowObj.__proto__.eat() == super.eat();
+    //birdObj.__proto__ = animalObj;  nameプロパティが定義されたオブジェクトを代入している必要がある。
+    //super.をgetterとして扱うとsuper.はメソッドが所属するオブジェクトのprototypeになる
+  },
+};
+
+// birdObj.__proto__ = animalObj
+// swallowObj.__proto__ = birdObj;
+// swallowObj.eat();
+
+//////Extendを使わない方法
+class Bird  {
+  //継承元はクラスではなくても、関数式(アロー関数は不可)でも良い。
+  name = "bird"; //④
+  constructor(age, name) {
+    this.animal = new Animal(age)
+    this.name = name; //⑤super()の後
+  }
+
+  eat() {
+    this.animal.eat();
+    console.log("eat from Bird"); //子のメソッドが優先される。
+  }
+  static fly() {
+    Animal.foo();
+    console.log("fly from Bird");
+  }
+}
+
+const bird = new Bird(3, "pi");
+console.log(bird.animal.age);
+bird.eat();
+Bird.fly();
+
+
+class Car { }
+const car = new Car();
+class Taxi extends Car { }
+const taxi = new Taxi();
+// Car.prototype ===taxi.__proto__.
+console.log(taxi instanceof Car);
